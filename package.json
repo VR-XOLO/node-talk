@@ -1,0 +1,23 @@
+{
+  "name": "mern-chat-app",
+  "version": "1.0.0",
+  "description": "mern chatting app",
+  "main": "server.js",
+  "scripts": {
+    "server" : "nodemon backend/server.js",
+    "start": "node backend/server.js",
+    "build": "npm install --legacy-peer-deps && npm install --prefix frontend --legacy-peer-deps && npm run build --prefix frontend"
+  },
+  "author": "Sahil",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-async-handler": "^1.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.1",
+    "nodemon": "^3.1.0",
+    "socket.io": "^4.7.5"
+  }
+}
