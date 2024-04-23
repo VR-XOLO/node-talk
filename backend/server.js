@@ -35,6 +35,8 @@ app.use(express.json())
       
 //  deployment code 
 
+app.use(notFound);
+app.use(errorHandler);
 
  const server = app.listen(PORT || 3000, () => {
   console.log(`Example app listening on port ${PORT}`);
