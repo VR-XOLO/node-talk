@@ -172,7 +172,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
           alignItems="center"
         >
           <IconButton
-            d={{ base: "flex", md: "none" }}
+            display={{ base: "flex", md: "none" }}
             icon={<ArrowBackIcon />}
             onClick={() => setSelectedChat("")}
           />
@@ -244,7 +244,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
               placeholder="Enter a message.."
               onChange={typingHandler}
               value={newMessage}
-              
             />
           </FormControl>
         </Box>
