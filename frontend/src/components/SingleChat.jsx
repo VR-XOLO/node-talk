@@ -11,21 +11,23 @@ import UpdateGroupChatModal from "./miscellenous/UpdateGroupChatModal";
 import { ChatState } from "./context/chatProvider";
 import ScrollableChat from "./ScrollableChat";
 import Lottie from "react-lottie";
-import animationData  from "../animation/typing.json"
- 
-import io from "socket.io-client"; 
+import animationData from "../animation/typing.json";
+import EmojiPicker from "emoji-picker-react";
+
+import io from "socket.io-client";
 
 const ENDPOINT = "https://node-talk-2.onrender.com";
 var socket, selectedChatCompare;
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
-
-  const {user, selectedChat, setSelectedChat, notification ,setNotification} = ChatState()
+  const { user, selectedChat, setSelectedChat, notification, setNotification } =
+    ChatState();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [socketConnected, setSocketConnected] = useState(false);
   const [typing, setTyping] = useState(false);
   const [istyping, setIsTyping] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const toast = useToast();
   const defaultOptions = {
     loop: true,
@@ -35,7 +37,16 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       preserveAspectRatio: "xMidYMid slice",
     },
   };
-  
+
+  const onEmojiClick = (emojiObject) => {
+    setNewMessage((prevMessage) => prevMessage + emojiObject.emoji);
+    // setShowEmojiPicker(false); // Optionally close the picker after selection
+  };
+
+  // Toggle function for showing/hiding the emoji picker
+  const toggleEmojiPicker = () => {
+    setShowEmojiPicker(!showEmojiPicker);
+  };
   useEffect(() => {
     socket = io(ENDPOINT);
     socket.emit("setup", user);
@@ -45,7 +56,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
     // eslint-disable-next-line
   }, []);
-  
+
   const sendMessage = async (event) => {
     if (event.key === "Enter" && newMessage) {
       try {
@@ -80,11 +91,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     }
   };
 
-
-
   const fetchMessages = async () => {
     if (!selectedChat) return;
- 
+
     try {
       const config = {
         headers: {
@@ -100,7 +109,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       );
       setMessages(data);
       setLoading(false);
-        socket.emit('join chat', selectedChat._id)
+      socket.emit("join chat", selectedChat._id);
     } catch (error) {
       toast({
         title: "Error Occured!",
@@ -134,7 +143,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     }, timerLength);
   };
 
-
   useEffect(() => {
     fetchMessages();
     selectedChatCompare = selectedChat;
@@ -159,105 +167,147 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
   return (
     <>
-    {selectedChat ? (
-      <>
-        <Text
-          fontSize={{ base: "28px", md: "30px" }}
-          pb={3}
-          px={2}
-          w="100%"
-          fontFamily="Work sans"
-          display = {"flex"}
-          justifyContent={{ base: "space-between" }}
-          alignItems="center"
-        >
-          <IconButton
-            display={{ base: "flex", md: "none" }}
-            icon={<ArrowBackIcon />}
-            onClick={() => setSelectedChat("")}
-          />
-          {
-            (!selectedChat.isGroupChat ? (
+      {selectedChat ? (
+        <>
+          <Text
+            fontSize={{ base: "28px", md: "30px" }}
+            pb={3}
+            px={2}
+            w="100%"
+            fontFamily="Work sans"
+            display={"flex"}
+            justifyContent={{ base: "space-between" }}
+            alignItems="center"
+          >
+            <IconButton
+              display={{ base: "flex", md: "none" }}
+              icon={<ArrowBackIcon />}
+              onClick={() => setSelectedChat("")}
+            />
+            {!selectedChat.isGroupChat ? (
               <>
                 {getSender(user, selectedChat.users)}
-                <ProfileModal
-                  user={getSenderFull(user, selectedChat.users)}
-                />
+                <ProfileModal user={getSenderFull(user, selectedChat.users)} />
               </>
             ) : (
               <>
                 {selectedChat.chatName.toUpperCase()}
                 <UpdateGroupChatModal
-                  fetchAgain={fetchAgain} 
+                  fetchAgain={fetchAgain}
                   setFetchAgain={setFetchAgain}
                   fetchMessages={fetchMessages}
                 />
               </>
-            ))}
-        </Text>
+            )}
+          </Text>
+          <Box
+            display={"flex"}
+            flexDir="column"
+            justifyContent="flex-end"
+            p={3}
+            bg="#E8E8E8"
+            w="100%"
+            h="100%"
+            borderRadius="lg"
+            overflowY="hidden"
+          >
+            {loading ? (
+              <Spinner
+                size="xl"
+                w={20}
+                h={20}
+                alignSelf="center"
+                margin="auto"
+              />
+            ) : (
+              <div className="messages">
+                <ScrollableChat messages={messages} />
+              </div>
+            )}
+
+            <FormControl
+              onKeyDown={sendMessage}
+              id="first-name"
+              isRequired
+              mt={3}
+            >
+              {istyping ? (
+                <div>
+                  <Lottie
+                    options={defaultOptions}
+                    // height={50}
+                    width={70}
+                    style={{ marginBottom: 15, marginLeft: 0 }}
+                  />
+                </div>
+              ) : (
+                <></>
+              )}
+              <span style={{ position: "relative" }}>
+                <IconButton
+                  icon={
+                    showEmojiPicker ? (
+                      <span>
+                         <i className="fa-solid fa-xmark"
+                            style={{ fontSize: "20px" }}
+                        ></i>
+                      </span>
+                    ) : (
+                      <span>
+                        <i
+                          className="fa-regular fa-face-smile"
+                          style={{ fontSize: "20px" }}
+                        ></i>
+                      </span>
+                    )
+                  }
+                  onClick={toggleEmojiPicker}
+                  aria-label="Toggle Emoji Picker"
+                  m={2} // margin for spacing
+                />
+                {showEmojiPicker && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "100%",
+                      left: 0,
+                      zIndex: 1000,
+                      // Ensure the picker does not overflow the parent width
+                    }}
+                  >
+                    <EmojiPicker
+                      onEmojiClick={onEmojiClick}
+                      height={"300px"}
+                      width={"100%"}
+                    />
+                  </div>
+                )}
+              </span>
+              <Input
+                variant="filled"
+                bg="#E0E0E0"
+                placeholder="Enter a message.."
+                onChange={typingHandler}
+                value={newMessage}
+                w={"90%"}
+              />
+            </FormControl>
+          </Box>
+        </>
+      ) : (
         <Box
           display={"flex"}
-          flexDir="column"
-          justifyContent="flex-end"
-          p={3}
-          bg="#E8E8E8"
-          w="100%"
+          alignItems="center"
+          justifyContent="center"
           h="100%"
-          borderRadius="lg"
-          overflowY="hidden"
         >
-          {loading ? (
-            <Spinner
-              size="xl"
-              w={20}
-              h={20}
-              alignSelf="center"
-              margin="auto"
-            />
-          ) : (
-            <div className="messages">
-              <ScrollableChat messages={messages} />
-            </div>
-          )}
-
-          <FormControl
-            onKeyDown={sendMessage}
-            id="first-name"
-            isRequired
-            mt={3}
-          >
-            {istyping ? (
-              <div>
-                <Lottie
-                  options={defaultOptions}
-                  // height={50}
-                  width={70}
-                  style={{ marginBottom: 15, marginLeft: 0 }}
-                />
-              </div>
-            ) : (
-              <></>
-            )}
-            <Input
-              variant="filled"
-              bg="#E0E0E0"
-              placeholder="Enter a message.."
-              onChange={typingHandler}
-              value={newMessage}
-            />
-          </FormControl>
-        </Box>
-      </>
-   ) : (
-    <Box display={"flex"}   alignItems="center" justifyContent="center" h="100%">
-          <Text fontSize="3xl" pb={3} >
+          <Text fontSize="3xl" pb={3}>
             Click on a user to start chatting
           </Text>
         </Box>
-   )}
-
+      )}
     </>
-  )
-}
+  );
+};
 
-export default SingleChat
+export default SingleChat;

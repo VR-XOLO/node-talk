@@ -4,9 +4,9 @@ import { useToast } from "@chakra-ui/toast";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import ChatLoading from "./ChatLoading";
-  import { Button } from "@chakra-ui/react";
+  import { Avatar, Button } from "@chakra-ui/react";
 import { ChatState } from "../context/chatProvider";
-import { getSender } from "../../config/ChatLogics";
+import { getSender, getSenderFull } from "../../config/ChatLogics";
 import GroupModal from "./GroupModal";
 import GroupChatModal from "./GroupModal";
 
@@ -14,7 +14,7 @@ const MyChats = ({ fetchAgain }) => {
   const [loggedUser, setLoggedUser] = useState();
 
   const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
-
+  console.log(chats, "selectedChat");
   const toast = useToast();
 
   const fetchChats = async () => {
@@ -99,8 +99,18 @@ const MyChats = ({ fetchAgain }) => {
                 px={3}
                 py={2}
                 borderRadius="lg"
-                key={chat._id}
+                key={chat._id}  
+                display={"flex"}
               >
+                 <Avatar
+                  mt="7px"
+                  mr={1}
+                  size="sm"
+                  cursor="pointer"
+                  name={getSenderFull(loggedUser, chat.users)?.name}
+                  src={getSenderFull(loggedUser, chat.users)?.pic}
+                />
+              <div>
                 <Text>
                   {!chat.isGroupChat
                     ? getSender(loggedUser, chat.users)
@@ -114,6 +124,7 @@ const MyChats = ({ fetchAgain }) => {
                       : chat.latestMessage.content}
                   </Text>
                 )}
+                </div>
               </Box>
             ))}
           </Stack>
